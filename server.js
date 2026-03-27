@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'))
 
 app.get('/', (req, res) => {
-    console.log('Here') 
+    console.log('Here')
     res.render('canvas')
     // res.render('home')
 });
@@ -52,44 +52,44 @@ io.on('connection', (socket) => {
 // Logic and Response
 setInterval(() => {
     for (const id in players) {
-    const player = players[id];
+        const player = players[id];
 
-    if (player.keys.ArrowRight) {
-        const newBullet = {
-            x: player.x + 25,
-            y: player.y + 25,
-            x_vel: 1  
+        if (player.keys.ArrowRight) {
+            const newBullet = {
+                x: player.x + 25,
+                y: player.y + 25,
+                x_vel: 1
+            }
+            bullets.push(newBullet)
         }
-        bullets.push(newBullet)
+
+        // Vertical movement
+        if (player.keys.w) {
+            player.y_vel = 1;
+        } else if (player.keys.s) {
+            player.y_vel = -1;
+        } else {
+            player.y_vel = 0;
+        }
+
+        // Horizontal movement
+        if (player.keys.a) {
+            player.x_vel = -1;
+        } else if (player.keys.d) {
+            player.x_vel = 1;
+        } else {
+            player.x_vel = 0;
+        }
+
+        for (const bullet of bullets) {
+            bullet.x += bullet.x_vel
+        }
+
+        player.x += player.x_vel
+        player.y -= player.y_vel
     }
 
-    // Vertical movement
-    if (player.keys.w) {
-        player.y_vel = 1;
-    } else if (player.keys.s) {
-        player.y_vel = -1;
-    } else {
-        player.y_vel = 0;
-    }
-
-    // Horizontal movement
-    if (player.keys.a) {
-        player.x_vel = -1;
-    } else if (player.keys.d) {
-        player.x_vel = 1;
-    } else {
-        player.x_vel = 0;
-    }
-
-    for (const bullet of bullets) {
-        bullet.x += bullet.x_vel
-    }
-
-    player.x += player.x_vel
-    player.y -= player.y_vel
-} 
-
-io.emit('state_update', {players, bullets});
+    io.emit('state_update', { players, bullets });
 }, 15);
 
 
