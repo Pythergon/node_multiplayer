@@ -1,9 +1,13 @@
 <html>
     <head>
         <title>Game Canvas</title>
+        <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
-        <canvas width="600" height="400" id="game_canvas"></canvas>
+        <canvas width="1000" height="800" id="game_canvas"></canvas>
+        <label for="username">Choose a username:</label>
+        <input type="text" id="username" name="username">
+        <button onclick="setUsername()">Submit</button>
         <script src="/socket.io/socket.io.js"></script>
         <script>
             const socket = io();

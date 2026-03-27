@@ -1,7 +1,17 @@
 const canvas = document.getElementById("game_canvas");
 const ctx = canvas.getContext("2d");
 
-// const socket = io();
+const VIRTUAL_WIDTH = 1000;
+let s = 1; // Default scale
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    s = canvas.width / VIRTUAL_WIDTH; // Update the scale factor
+}
+
+window.addEventListener('resize', resize);
+resize(); // Call it once at the start
 
 keypress = {}
 window.addEventListener("keydown", (event) => {
@@ -11,77 +21,36 @@ window.addEventListener("keyup", (event) => {
     keypress[event.key] = false;
 });
 
-class Game {
-    constructor() {
-        this.players = []
-    }
-
-    update() {
-        socket.emit('keystate', keypress);
-    }
-
-    render() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (const player of this.players) {
-            player.draw()
-        }
-    }
-}
-
-class Player {
-    constructor(game, x , y) {
-        game.players.push(this)
-        this.x = x
-        this.y = y
-
-        this.x_vel = 0
-        this.y_vel = 0
-    }
-
-    update() {
-        // if (keypress['s']) {
-        //     this.y_vel = -1;
-        // } else if (keypress['w']) {
-        //     this.y_vel = 1;
-        // } else {
-        //     this.y_vel = 0;
-        // }
-
-        // if (keypress['a']) {
-        //     this.x_vel = -1;
-        // } else if (keypress['d']) {
-        //     this.x_vel = 1;
-        // } else {
-        //     this.x_vel = 0;
-        // }
-
-    }
-
-    draw() {
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y, 100, 100);
-    }
-}
-
-var myGame = new Game()
-var myPlayer = new Player(myGame, 50, 50);
-
 function gameloop() {
-    myGame.update()
-    // myGame.render()
+    socket.emit('keystate', keypress);
     requestAnimationFrame(gameloop)
 }
 
 requestAnimationFrame(gameloop)
 
-// game.js
-socket.on('state_update', (serverPlayers) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wipe the board
+function setUsername() {
+    const input = document.getElementById('username')
+    socket.emit('name_change', input.value)
+}
 
-    for (const id in serverPlayers) {
-        const p = serverPlayers[id];
+socket.on('state_update', (data) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wipe the board
+    ctx.save();
+    ctx.scale(s, s);
+
+    for (const id in data.players) {
+        const p = data.players[id];
         
         ctx.fillStyle = (id === socket.id) ? "blue" : "red"; // Make yourself blue!
         ctx.fillRect(p.x, p.y, 50, 50);
+        ctx.font = "20px Arial";
+        ctx.fillText(p.name, p.x, p.y)
     }
+
+    ctx.fillStyle = 'yellow';
+    data.bullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, 10, 5);
+    });
+
+    ctx.restore();
 });
