@@ -17,9 +17,7 @@ class Game {
     }
 
     update() {
-        for (const player of this.players) {
-            player.update() 
-        }
+        socket.emit('keystate', keypress);
     }
 
     render() {
@@ -57,8 +55,6 @@ class Player {
         //     this.x_vel = 0;
         // }
 
-        socket.emit('keystate', keypress);
-
     }
 
     draw() {
@@ -72,9 +68,20 @@ var myPlayer = new Player(myGame, 50, 50);
 
 function gameloop() {
     myGame.update()
-    myGame.render()
+    // myGame.render()
     requestAnimationFrame(gameloop)
 }
 
 requestAnimationFrame(gameloop)
 
+// game.js
+socket.on('state_update', (serverPlayers) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wipe the board
+
+    for (const id in serverPlayers) {
+        const p = serverPlayers[id];
+        
+        ctx.fillStyle = (id === socket.id) ? "blue" : "red"; // Make yourself blue!
+        ctx.fillRect(p.x, p.y, 50, 50);
+    }
+});
